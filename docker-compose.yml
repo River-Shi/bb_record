@@ -1,0 +1,17 @@
+version: '3.8'
+services:  
+  postgres:
+    image: postgres:17.5-alpine
+    container_name: postgres
+    ports:
+      - '${NEXUS_PG_PORT}:5432'
+    environment:
+      - POSTGRES_USER=${NEXUS_PG_USER}
+      - POSTGRES_PASSWORD=${NEXUS_PG_PASSWORD}
+      - POSTGRES_DB=${NEXUS_PG_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

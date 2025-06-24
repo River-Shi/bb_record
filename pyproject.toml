@@ -1,0 +1,14 @@
+[project]
+name = "bb-record"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "apscheduler>=3.11.0",
+    "pandas>=2.3.0",
+    "psycopg2-binary>=2.9.10",
+    "pybit>=5.11.0",
+    "python-dotenv>=1.1.1",
+    "tenacity>=9.1.2",
+]
