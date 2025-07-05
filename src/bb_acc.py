@@ -228,9 +228,14 @@ def get_pos_info(session: HTTP, user: str, category: str, symbol: str = None, ba
             break
     
     # Save to database
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
     if all_positions:
-        conn = get_db_connection()
-        cur = conn.cursor()
+        # Get current symbols from API
+        current_symbols = [pos.get('symbol') for pos in all_positions]
+        
+        # Insert/update positions
         for pos in all_positions:
             cur.execute(f"""
                 INSERT INTO {user}_positions (symbol, side, size, avg_price, position_value, 
@@ -251,9 +256,21 @@ def get_pos_info(session: HTTP, user: str, category: str, symbol: str = None, ba
                   pos.get('avgPrice'), pos.get('positionValue'), 
                   pos.get('unrealisedPnl'), pos.get('delta'), 
                   pos.get('vega'), pos.get('gamma'), pos.get('theta')))
-        conn.commit()
-        cur.close()
-        conn.close()
+        
+        # Delete symbols that are no longer in current positions
+        if current_symbols:
+            placeholders = ','.join(['%s'] * len(current_symbols))
+            cur.execute(f"""
+                DELETE FROM {user}_positions 
+                WHERE symbol NOT IN ({placeholders})
+            """, current_symbols)
+    else:
+        # If no positions, delete all records
+        cur.execute(f"DELETE FROM {user}_positions")
+    
+    conn.commit()
+    cur.close()
+    conn.close()
     
     logging.info(f"Retrieved and saved {len(all_positions)} position records for category: {category}")
     return {
